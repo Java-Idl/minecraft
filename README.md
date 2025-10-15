@@ -1,92 +1,87 @@
 # Minecraft Paper Server Docker Setup
 
-This repository contains a Dockerized Minecraft Paper server with automated datapack and resource pack setup. It uses the itzg/minecraft-server base image with a custom entrypoint script to download and install datapacks and resource packs from Dropbox links on first run.
+This repository contains a Dockerized setup for running a Minecraft Paper server with automated datapack and resource pack management.
 
-## Features
+## Overview
 
-- Runs Paper Minecraft server version 1.21.8 by default, configurable via environment variables
-- Automatically downloads and installs custom datapacks and resource packs into the world folder
-- Persists world data and configuration in a Docker volume for data durability
-- Configurable server properties such as seed, difficulty, memory allocation, and online mode
-- Uses Docker Compose for easy setup and orchestration
-- Custom entrypoint script ensures resource pack is set in server.properties with SHA1 hash for client prompt
+This project leverages the [itzg/minecraft-server](https://hub.docker.com/r/itzg/minecraft-server) Docker image to run a Minecraft Paper server with configurable environment variables, persistent data storage, and auto-download of custom datapacks and resource packs from Google Drive.
 
-## Files
+## Repository Contents
 
-- `docker-compose.yaml`: Defines the Minecraft Paper server service with environment variables and volume mounts.
-- `Dockerfile`: Based on itzg/minecraft-server image; adds the custom entrypoint script.
-- `entrypoint.sh`: Script that runs at container start to:
-  - Create necessary directories
-  - Download datapacks and resource pack if not already present
-  - Extract datapacks and resource pack into appropriate folders
-  - Update `server.properties` to enable resource pack prompt with SHA1 checksum
-  - Start the Minecraft server
+- `.gitattributes`: Git configuration for consistent line endings.
+- `docker-compose.yaml`: Defines the Minecraft Paper service with ports, environment variables, volume mounts, and container runtime settings.
+- `Dockerfile`: Custom Docker image setup that extends itzg/minecraft-server to add an entrypoint script.
+- `entrypoint.sh`: Shell script that sets up required directories, downloads datapacks and a resource pack from Google Drive if not already present, updates server properties, and starts the server.
+- `start.sh`: Script to build, start, or attach to the Minecraft server container easily using Docker Compose.
 
-- `.gitattributes`: Ensures proper line endings for shell scripts and Dockerfile.
+## Prerequisites
 
-## How to Start the Server
-
-### Initial Setup and Start
-
-1. Build the Docker image and start the server containers:
-
-   ```
-   docker compose build
-   docker compose up -d
-   ```
-
-2. Attach to the running Minecraft server container to see logs and interact with the server console:
-
-   ```
-   docker attach minecraft-paper
-   ```
-
-### Subsequent Starts
-
-After the initial setup, you can start and attach to the server container without rebuilding:
-
-```
-docker start minecraft-paper
-docker attach minecraft-paper
-```
-
-This will resume the Minecraft server in the existing container with preserved world data and settings.
-
-## Configuration
-
-You can configure the server behavior via environment variables in `docker-compose.yaml`:
-
-- `EULA`: Must be `TRUE` to accept Minecraft EULA and run the server.
-- `TYPE`: Server type, default is `PAPER`.
-- `VERSION`: Minecraft version, default is `1.21.8`.
-- `MEMORY`: RAM allocated to the server (e.g., `4G`).
-- `VIEW_DISTANCE`: Minecraft view distance.
-- `SERVER_NAME`: Optional server name.
-- `SEED`: Optional world seed.
-- `DIFFICULTY`: Game difficulty (`easy`, `normal`, `hard`, etc.).
-- `ONLINE_MODE`: Enable or disable online authentication (`TRUE` or `FALSE`).
+- Docker installed on your system.
+- Docker Compose installed.
+- Appropriate permissions to run Docker commands.
 
 ## Usage
 
-1. Clone this repository:
+### Starting the Server
 
-   ```
-   git clone <repo-url>
-   cd <repo-directory>
-   ```
+Run the following command to start or attach to the Minecraft server container:
 
-2. Modify environment variables in `docker-compose.yaml` as needed.
+```
+./start.sh
+```
 
-3. Start the Minecraft server with Docker Compose:
+- If the container does not exist, it will build and start it using Docker Compose.
+- If the container exists but is stopped, it will start the container.
+- If the container is already running, it will directly attach your terminal to the server console.
 
-   ```
-   docker compose up -d
-   ```
+### Environment Configuration
 
-4. The Minecraft server will start, downloading datapacks and resource pack on first run. World data and config files are persisted in the `./data` folder.
+The Minecraft server configuration is controlled via environment variables in `docker-compose.yaml`. Key variables include:
 
-5. Connect to the server on port `25565`.
+- `EULA`: Must be "TRUE" to accept Minecraft's EULA.
+- `TYPE`: Specifies the server type, here set to "PAPER".
+- `VERSION`: Minecraft server version (default: "1.21.8").
+- `MEMORY`: RAM allocated to the server (e.g., "4G").
+- `VIEW_DISTANCE`: Minecraft view distance setting.
+- `SERVER_NAME`: Optional server name.
+- `SEED`: Optional world seed.
+- `DIFFICULTY`: Game difficulty (e.g., "hard").
+- `ONLINE_MODE`: Set to "FALSE" to disable authentication (useful for offline mode).
+
+Adjust these variables in `docker-compose.yaml` as needed before starting the server.
+
+### Data Persistence
+
+- Server data, worlds, and configurations are persisted in the `./data` folder on the host, mapped to `/data` inside the container.
+- This ensures all game progress and settings are retained between container restarts.
+
+### Datapacks and Resource Packs
+
+- The `entrypoint.sh` script automatically downloads a collection of datapacks and a single resource pack from Google Drive URLs defined in the script, but only if they are not already present.
+- The resource pack's URL and SHA1 checksum are updated in the `server.properties` to prompt clients to download the resource pack automatically.
+
+## Customization
+
+- To add or change datapacks, update the URLs array in `entrypoint.sh`.
+- Change the resource pack URL and SHA1 checksum as needed.
+- Modify Minecraft server options via environment variables in the docker-compose file.
+
+## Notes
+
+- The container uses `tty` and `stdin_open` to allow interactive console attachment.
+- The server runs with offline mode enabled by default (`ONLINE_MODE=FALSE`), which can be changed based on your use case.
+- The EULA must be accepted (`EULA=TRUE`) for the server to run correctly.
+
+## Troubleshooting
+
+- Make sure Docker and Docker Compose are correctly installed and running.
+- Check logs using `docker logs minecraft-paper` if there are server startup issues.
+- Verify correct permissions to write to the `./data` directory.
 
 ## License
 
-This project is provided as-is without warranty. Modify and use it freely for personal or server hosting purposes.
+This setup is provided as-is under the MIT License. Adjust and use it freely for personal or private servers.
+
+---
+
+Enjoy your Minecraft Paper server with automated setup and easy management using Docker!
