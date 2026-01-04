@@ -1,24 +1,28 @@
 services:
   minecraft-paper:
-    build: .
-    # image: itzg/minecraft-server
+    image: itzg/minecraft-server
     container_name: minecraft-paper
     ports:
       - "25565:25565"
     environment:
-      EULA: "TRUE"           # Must be TRUE to run the server
-      TYPE: "PAPER"          # Use PaperMC server type
-      VERSION: "1.21.8"      # Minecraft version (change as needed)
-      MEMORY: "4G"           # RAM for the server (e.g., 2G, 4G)
-      VIEW_DISTANCE: "16"    # Minecraft view distance
-      # PAPER_BUILD: "140"   # Optional: specific Paper build
-      # PAPER_CHANNEL: "experimental" # Optional: for experimental builds
-      SERVER_NAME: "Miami" # Optional: server name
-      DIFFICULTY: "hard"   # Optional: game difficulty
-      # MAX_PLAYERS: "10"    # Optional: max players
-      ONLINE_MODE: "FALSE"  # Optional: enable/disable authentication
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "1.21.4"
+      MEMORY: "4G"
+      VIEW_DISTANCE: "16"
+      SERVER_NAME: "Miami"
+      DIFFICULTY: "hard"
+      ONLINE_MODE: "FALSE"
+
+      # Datapacks & Resource Packs
+      # Note: DATAPACKS accepts a comma-separated list of URLs
+      DATAPACKS: "https://www.dropbox.com/scl/fo/2vs2l7ajjl04qyec9grxi/AJKiIw7v4yEvv0VtBDLs2I4?rlkey=exlyx72f5021t8eys0u1wssn4&st=b3ylgpbc&dl=0"
+
+      # Maps to server.properties resource-pack and resource-pack-sha1
+      RESOURCE_PACK: "https://www.dropbox.com/scl/fi/6e956wuhn3l4xvod9adm3/resourcepack.zip?rlkey=em7l8oz1ecm8q76tgjvlt2z6p&st=75vdite1&dl=0"
+      RESOURCE_PACK_SHA1: "e359659dd297dfaf087f5e293df7c362aff06c68"
+
     volumes:
-      - ./data:/data         # Persists world and config files
-    # restart: unless-stopped
+      - ./data:/data
     tty: true
     stdin_open: true
