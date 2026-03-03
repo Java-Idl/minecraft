@@ -1,4 +1,12 @@
-data/
 minecraft_data/
+
+# Runtime output
+data/
 logs.txt
 start_error.txt
+*.log
+
+# OS / editor files
+Thumbs.db
+.DS_Store
+.vscode/
