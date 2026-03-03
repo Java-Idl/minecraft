@@ -73,7 +73,7 @@ For another device on your home network, use your PC LAN IP:
 Run `websocat` in a separate terminal:
 
 ```powershell
-C:\Users\Java\Downloads\websocat.exe -b -E tcp-l:127.0.0.1:25576 ws://127.0.0.1:80/minecraft-tunnel
+websocat.exe -b -E tcp-l:127.0.0.1:25576 ws://127.0.0.1:80/minecraft-tunnel
 ```
 
 Then connect Minecraft Java to:
