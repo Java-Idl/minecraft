@@ -1,57 +1,124 @@
-# Minecraft Paper Server Docker Setup
+# Minecraft Paper Server
 
-This repository contains a Dockerized setup for running a Minecraft Paper server with automated datapack and resource pack management.
+This project runs a Minecraft Java server with Docker.
 
-## Overview
+## What this setup includes
 
-This project leverages the [itzg/minecraft-server](https://hub.docker.com/r/itzg/minecraft-server) Docker image to run a Minecraft Paper server. It features native integration for downloading datapacks and resource packs directly via environment variables, eliminating the need for custom entrypoint scripts.
+The stack in `docker-compose.yml` starts three services:
 
-## Repository Contents
+- `minecraft-paper`: the game server (`itzg/minecraft-server`)
+- `websockify`: TCP-to-WebSocket bridge
+- `nginx`: HTTP endpoint for the tunnel (`/minecraft-tunnel`)
 
-- `docker-compose.yml`: Defines the Minecraft Paper service, environment variables, volume mounts, and container runtime settings.
-- `start.sh`: A simple helper script to start or attach to the Minecraft server container using Docker Compose.
+Current game settings in Compose:
 
-## Prerequisites
+- Server type: Paper
+- Version: `1.21.11`
+- Memory: `4G`
+- Server port: `25575`
+- Online mode: `FALSE`
 
-- Docker installed on your system.
-- Docker Compose installed.
+This setup is Java Edition only.
 
-## Usage
+## Folder layout
 
-### Starting the Server
+- `docker-compose.yml`: service definitions
+- `nginx.conf`: tunnel proxy configuration
+- `minecraft_data/`: world data, server properties, plugins, logs
 
-Run the following command to start or attach to the Minecraft server container:
+## Start and stop
+
+From this folder, run:
 
 ```bash
-./start.sh
+docker compose up -d --force-recreate
 ```
 
-- If the container does not exist/is stopped, it will start it.
-- If the container is already running, it will attach your terminal to the server console.
+Stop everything:
 
-### Environment Configuration
+```bash
+docker compose down
+```
 
-The Minecraft server configuration is managed entirely in `docker-compose.yml`.
+## Check server status
 
-**Core Settings:**
-- `EULA`: Must be "TRUE".
-- `TYPE`: "PAPER"
-- `VERSION`: "1.21.4"
-- `MEMORY`: "4G"
-- `ONLINE_MODE`: "FALSE" (Update to TRUE for secure, authenticated servers)
+See container state:
 
-**Content Management:**
-- `DATAPACKS`: A comma-separated list of URLs to datapack zip files. These are automatically downloaded by the container.
-- `RESOURCE_PACK` & `RESOURCE_PACK_SHA1`: Configures the server resource pack URL and hash directly in `server.properties`.
+```bash
+docker compose ps
+```
 
-## Data Persistence
+See server logs:
 
-- World data and configurations are persisted in the `./data` directory on the host.
+```bash
+docker compose logs -f minecraft-paper
+```
 
-## License
+You should eventually see:
 
-This setup is provided as-is under the MIT License.
+`Done (...s)! For help, type "help"`
 
----
+## Connect with Minecraft Java (direct)
 
-Enjoy your Minecraft Paper server with automated setup and easy management using Docker!
+Use this server address in the game client:
+
+`127.0.0.1:25575`
+
+For another device on your home network, use your PC LAN IP:
+
+`<your-lan-ip>:25575`
+
+## Test the WebSocket tunnel client
+
+Run `websocat` in a separate terminal:
+
+```powershell
+C:\Users\Java\Downloads\websocat.exe -b -E tcp-l:127.0.0.1:25576 ws://127.0.0.1:80/minecraft-tunnel
+```
+
+Then connect Minecraft Java to:
+
+`127.0.0.1:25576`
+
+Important notes:
+
+- Do not use `ws://0.0.0.0:80/...` as a destination.
+- `0.0.0.0` is for listening, not dialing.
+- Do not bind `websocat` to `25575` because Docker already uses that port.
+
+## Quick troubleshooting
+
+If the game client cannot connect:
+
+1. Check containers:
+
+	```bash
+	docker compose ps
+	```
+
+	`minecraft-paper` should become `healthy`.
+
+2. Check listening ports on Windows:
+
+	```powershell
+	Test-NetConnection -ComputerName 127.0.0.1 -Port 25575
+	Test-NetConnection -ComputerName 127.0.0.1 -Port 80
+	```
+
+3. If using `websocat`, also check:
+
+	```powershell
+	Test-NetConnection -ComputerName 127.0.0.1 -Port 25576
+	```
+
+4. Review logs for startup errors:
+
+	```bash
+	docker compose logs --tail 200 minecraft-paper nginx websockify
+	```
+
+## Data and plugins
+
+- World and server files are stored in `minecraft_data/`.
+- Plugins are loaded from `minecraft_data/plugins/`.
+- Geyser and Floodgate were removed from this setup.

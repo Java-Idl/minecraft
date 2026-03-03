@@ -3,26 +3,42 @@ services:
     image: itzg/minecraft-server
     container_name: minecraft-paper
     ports:
-      - "25565:25565"
+      - "25575:25575"
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "1.21.4"
+      VERSION: "1.21.11"
       MEMORY: "4G"
       VIEW_DISTANCE: "16"
       SERVER_NAME: "Miami"
       DIFFICULTY: "hard"
       ONLINE_MODE: "FALSE"
-
-      # Datapacks & Resource Packs
-      # Note: DATAPACKS accepts a comma-separated list of URLs
-      DATAPACKS: "https://www.dropbox.com/scl/fo/2vs2l7ajjl04qyec9grxi/AJKiIw7v4yEvv0VtBDLs2I4?rlkey=exlyx72f5021t8eys0u1wssn4&st=b3ylgpbc&dl=0"
-
-      # Maps to server.properties resource-pack and resource-pack-sha1
-      RESOURCE_PACK: "https://www.dropbox.com/scl/fi/6e956wuhn3l4xvod9adm3/resourcepack.zip?rlkey=em7l8oz1ecm8q76tgjvlt2z6p&st=75vdite1&dl=0"
-      RESOURCE_PACK_SHA1: "e359659dd297dfaf087f5e293df7c362aff06c68"
-
+      SKIP_DOWNLOAD: "TRUE"
+      SERVER_PORT: "25575"
+      ENABLE_RCON: "FALSE"
     volumes:
-      - ./data:/data
+      - ./minecraft_data:/data
+    restart: unless-stopped
     tty: true
     stdin_open: true
+
+  websockify:
+    image: jwnmulder/websockify:latest
+    container_name: minecraft-websockify
+    # Listens on 8080 and forwards to the Minecraft container's internal port
+    command: 8080 minecraft-paper:25575
+    restart: unless-stopped
+    depends_on:
+      - minecraft-paper
+
+  nginx:
+    image: nginx:latest
+    container_name: minecraft-nginx
+    ports:
+      # Standard HTTP port exposed for the Websocket tunnel
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    depends_on:
+      - websockify
