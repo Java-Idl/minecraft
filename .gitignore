@@ -1,0 +1,23 @@
+# --- Runtime data volumes (Docker-managed, not for version control) ---
+minecraft_data/
+mumble_data/
+
+# --- Leftover / removed feature artifacts ---
+ytm_bot_profile/
+
+# --- Agent / IDE config ---
+.agent/
+
+# --- Runtime output ---
+data/
+logs.txt
+start_error.txt
+*.log
+
+# --- OS / editor files ---
+Thumbs.db
+.DS_Store
+.vscode/
+
+# --- Secrets ---
+.env
